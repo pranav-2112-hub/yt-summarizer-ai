@@ -1,48 +1,48 @@
 import streamlit as st
-import youtube_transcript_api
+import youtube_transcript_api  # Simple import
 from groq import Groq
 
-# Page Setup
-st.set_page_config(page_title="AI Video Summarizer", page_icon="📝")
+# 1. Setup
+st.set_page_config(page_title="AI Video Summarizer", page_icon="📹")
 st.title("📹 YouTube Video Summarizer")
 
-# Input Fields
+# 2. Inputs
 video_url = st.text_input("1. Paste YouTube URL:")
 api_key = st.text_input("2. Enter your Groq API Key:", type="password")
 
-def extract_video_id(url):
+def extract_id(url):
     if "v=" in url:
         return url.split("v=")[1].split("&")[0]
     elif "youtu.be/" in url:
         return url.split("youtu.be/")[1].split("?")[0]
-    else:
-        return url.split("/")[-1].split("?")[0]
+    return url.split("/")[-1].split("?")[0]
 
+# 3. Main Logic
 if st.button("Generate Summary"):
     if not video_url or not api_key:
         st.warning("Please provide both the URL and API Key.")
     else:
         try:
             with st.spinner("Fetching transcript..."):
-                v_id = extract_video_id(video_url)
+                v_id = extract_id(video_url)
                 
-                # --- THIS IS THE CRITICAL CHANGE ---
-                # We call the library directly to avoid the 'attribute' error
-                transcript_list = youtube_transcript_api.YouTubeTranscriptApi.get_transcript(v_id)
-                full_text = " ".join([item['text'] for item in transcript_list])
+                # --- THIS IS THE FIX ---
+                # We call: library.ClassName.function()
+                data = youtube_transcript_api.YouTubeTranscriptApi.get_transcript(v_id)
+                full_text = " ".join([item['text'] for item in data])
             
             with st.spinner("AI is summarizing..."):
                 client = Groq(api_key=api_key)
                 response = client.chat.completions.create(
                     messages=[
-                        {"role": "system", "content": "Summarize this transcript into 5 clear bullet points."},
+                        {"role": "system", "content": "Summarize this into 5 bullet points."},
                         {"role": "user", "content": full_text}
                     ],
                     model="llama3-8b-8192",
                 )
                 st.subheader("Summary:")
                 st.write(response.choices[0].message.content)
-                st.success("Success!")
+                st.success("Done!")
 
         except Exception as e:
             st.error(f"Error: {e}")
