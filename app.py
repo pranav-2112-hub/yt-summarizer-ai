@@ -20,14 +20,18 @@ video_url = st.text_input("Paste YouTube Video URL:")
 # 4. Logic to extract Transcript
 def get_transcript(url):
     try:
-        # Extract the video ID from the URL (the part after v=)
-        video_id = url.split("v=")[-1].split("&")[0]
-        transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
-        # Join all pieces of text into one long string
-        full_text = " ".join([item['text'] for item in transcript_data])
-        return full_text
+        # This handles both long urls and short 'youtu.be' links
+        if "v=" in url:
+            video_id = url.split("v=")[1].split("&")[0]
+        elif "youtu.be/" in url:
+            video_id = url.split("youtu.be/")[1].split("?")[0]
+        else:
+            video_id = url.split("/")[-1]
+            
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        return " ".join([i['text'] for i in transcript_list])
     except Exception as e:
-        return f"Error: Could not get transcript. (Check if captions are enabled on the video)"
+        return f"Error: {str(e)}"
 
 # 5. Execution Button
 if st.button("Generate Summary"):
