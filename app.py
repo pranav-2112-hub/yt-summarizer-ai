@@ -1,5 +1,5 @@
 import streamlit as st
-from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api import yta
 from groq import Groq
 
 # Page Setup
@@ -47,7 +47,7 @@ if st.button("Generate Summary"):
             with st.spinner("Extracting transcript..."):
                 v_id = extract_video_id(video_url)
                 # Correct function call: YouTubeTranscriptApi.get_transcript(v_id)
-                transcript_data = YouTubeTranscriptApi.get_transcript(v_id)
+                transcript_data = yta.YouTubeTranscriptApi.get_transcript(v_id)
                 full_text = " ".join([item['text'] for item in transcript_data])
             
             with st.spinner("AI is thinking..."):
